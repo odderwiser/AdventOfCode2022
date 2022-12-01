@@ -1,10 +1,7 @@
 mod day01;
+mod day02;
 
 fn main() {
 
 }
 
-pub enum Part {
-    One,
-    Two
-}
