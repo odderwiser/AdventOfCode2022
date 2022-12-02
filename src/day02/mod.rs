@@ -50,7 +50,7 @@ impl Game {
     pub fn get_win(opponent: &Game, me:&Game) -> u32 {
         match (opponent, me) {
             (a, b) if a == b => 3,
-            (Game::Rock, Game::Scissors) | (Game::Paper, Game::Rock) | (Game::Scissors, Game::Paper) => 0,
+            (a, b) if b == &Game::get_losing(a) => 0,
             _ => 6
         }
     }
@@ -71,7 +71,8 @@ impl Game {
         }
     }
 
-    pub fn get_losing(&self) -> Game {
+    //get the move that the oponent has to play to lose
+    fn get_losing(&self) -> Game {
         match self {
             Game::Rock => Game::Scissors,
             Game::Paper => Game::Rock,
