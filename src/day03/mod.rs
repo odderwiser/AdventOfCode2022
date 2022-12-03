@@ -1,51 +1,46 @@
 use itertools::Itertools;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Lines};
+use std::iter::Flatten;
 
-fn parse_input(filename: &str) -> BufReader<File> {
+fn parse_input(filename: &str) -> impl Iterator<Item=String> {
     let file = File::open(String::from("src/day03/") + filename).unwrap();
-    BufReader::new(file)
+    BufReader::new(file).lines().flatten()
 }
 
-fn part_2(filename: &str) -> u32 {
+fn part_2(filename: &str) -> usize {
     parse_input(filename)
-        .lines()
-        .map(|x| x.unwrap())
         .chunks(3)
         .into_iter()
         .map(|x| x.collect_tuple().unwrap())
         .map(|x: (String, String, String)| {
             get_value(
                 x.0.chars()
-                    .filter(|y| x.1.contains(*y) && x.2.contains(*y))
-                    .next()
+                    .find(|y| x.1.contains(*y) && x.2.contains(*y))
                     .unwrap(),
-            )
+            ) as usize
         })
         .sum()
 }
 
-fn part_1(filename: &str) -> u32 {
+fn part_1(filename: &str) -> usize {
     parse_input(filename)
-        .lines()
         .map(|line| {
-            let value = line.unwrap();
-            let sets = value.split_at(value.len() / 2);
+            let sets = line.split_at(line.len() / 2);
             get_value(
                 sets.0
                     .chars()
-                    .filter(|x| sets.1.contains(*x))
-                    .next()
+                    .find(|x| sets.1.contains(*x))
                     .unwrap(),
-            )
+            ) as usize
         })
         .sum()
 }
 
-fn get_value(c: char) -> u32 {
+fn get_value(c: char) -> u8 {
     match c {
-        a if a.is_lowercase() => a as u32 - 96,
-        a => a as u32 - 65 + 27,
+        a if a.is_lowercase() => a as u8 - b'a' + 1,
+        a => a as u8 - b'A'+ 27,
     }
 }
 
