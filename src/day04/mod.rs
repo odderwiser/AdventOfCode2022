@@ -1,6 +1,4 @@
 use itertools::Itertools;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 
 fn parse_input(filename: &str) -> impl Iterator<Item = &str> {
     filename.lines()
@@ -28,8 +26,9 @@ mod test {
 
     #[test]
     fn part_1_puzzle() {
-        //print!("{}", part_1("input.txt"));
-        assert_eq!(0, part_1(include_str!("input.txt")));
+        let output = part_1(include_str!("input.txt"));
+        print!("{}", output);
+        //assert_eq!(0, output);
     }
 
     #[test]
@@ -39,7 +38,8 @@ mod test {
 
     #[test]
     fn part_2_puzzle() {
-        //print!("{}", part_2("input.txt"));
-        assert_eq!(0, part_2(include_str!("input.txt")));
+        let output = part_2(include_str!("input.txt"));
+        print!("{}", output);
+        //assert_eq!(0, output);
     }
 }

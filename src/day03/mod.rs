@@ -10,9 +10,7 @@ fn parse_input(filename: &str) -> impl Iterator<Item = String> {
 
 fn part_2(filename: &str) -> usize {
     parse_input(filename)
-        .chunks(3)
-        .into_iter()
-        .map(|x| x.collect_tuple().unwrap())
+        .tuples()
         .map(|x: (String, String, String)| {
             get_value(
                 x.0.chars()
