@@ -1,11 +1,11 @@
 use itertools::Itertools;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Lines};
-use std::iter::Flatten;
+use std::io::{BufRead, BufReader};
 
-fn parse_input(filename: &str) -> impl Iterator<Item=String> {
-    let file = File::open(String::from("src/day03/") + filename).unwrap();
-    BufReader::new(file).lines().flatten()
+fn parse_input(filename: &str) -> impl Iterator<Item = String> {
+    BufReader::new(File::open(String::from("src/day03/") + filename).unwrap())
+        .lines()
+        .flatten()
 }
 
 fn part_2(filename: &str) -> usize {
@@ -27,12 +27,7 @@ fn part_1(filename: &str) -> usize {
     parse_input(filename)
         .map(|line| {
             let sets = line.split_at(line.len() / 2);
-            get_value(
-                sets.0
-                    .chars()
-                    .find(|x| sets.1.contains(*x))
-                    .unwrap(),
-            ) as usize
+            get_value(sets.0.chars().find(|x| sets.1.contains(*x)).unwrap()) as usize
         })
         .sum()
 }
@@ -40,7 +35,7 @@ fn part_1(filename: &str) -> usize {
 fn get_value(c: char) -> u8 {
     match c {
         a if a.is_lowercase() => a as u8 - b'a' + 1,
-        a => a as u8 - b'A'+ 27,
+        a => a as u8 - b'A' + 27,
     }
 }
 
