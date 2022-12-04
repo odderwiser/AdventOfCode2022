@@ -10,23 +10,32 @@ fn part_1(input: &str) -> usize {
 
 fn count(input: &str, logic: impl Fn(bool, bool) -> bool) -> usize {
     input
-        .lines()
-        .flat_map(|x| {
-            x.split([',', '-'])
-                .map(|y| y.parse::<usize>().unwrap())
-                .tuples()
-        })
+        .split([',', '-', '\n'])
+        .map(|y| y.parse::<usize>().unwrap())
         .tuples()
-        .filter(|((a, b), (c, d))| {
+        .filter(|(a, b, c, d)| {
             logic((a..=b).contains(&c), (a..=b).contains(&d))
                 || logic((c..=d).contains(&a), (c..=d).contains(&b))
         })
         .count()
 }
 
+fn oneliner() {
+     [|a, b| a &&b, |a, b| a || b].iter().map(|x|
+         include_str!("input.txt").split([',', '-', '\n'])
+             .map(|y| y.parse::<usize>().unwrap())
+             .tuples()
+             .filter(|(a, b, c, d)|
+                 x((a..=b).contains(&c), (a..=b).contains(&d))
+                     || x((c..=d).contains(&a), (c..=d).contains(&b))
+             )
+             .count()
+     ).for_each(|x|println!("{x}"))
+}
+
 #[cfg(test)]
 mod test {
-    use crate::day04::{part_1, part_2};
+    use crate::day04::{oneliner, part_1, part_2};
 
     #[test]
     fn part_1_example() {
@@ -50,5 +59,10 @@ mod test {
         let output = part_2(include_str!("input.txt"));
         //print!("{}", output);
         assert_eq!(843, output);
+    }
+
+    #[test]
+    fn test_oneliner() {
+        oneliner()
     }
 }
