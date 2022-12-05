@@ -21,16 +21,20 @@ fn count(input: &str, logic: impl Fn(bool, bool) -> bool) -> usize {
 }
 
 fn oneliner() {
-     [|a, b| a &&b, |a, b| a || b].iter().map(|x|
-         include_str!("input.txt").split([',', '-', '\n'])
-             .map(|y| y.parse::<usize>().unwrap())
-             .tuples()
-             .filter(|(a, b, c, d)|
-                 x((a..=b).contains(&c), (a..=b).contains(&d))
-                     || x((c..=d).contains(&a), (c..=d).contains(&b))
-             )
-             .count()
-     ).for_each(|x|println!("{x}"))
+    [|a, b| a && b, |a, b| a || b]
+        .iter()
+        .map(|x| {
+            include_str!("input.txt")
+                .split([',', '-', '\n'])
+                .map(|y| y.parse::<usize>().unwrap())
+                .tuples()
+                .filter(|(a, b, c, d)| {
+                    x((a..=b).contains(&c), (a..=b).contains(&d))
+                        || x((c..=d).contains(&a), (c..=d).contains(&b))
+                })
+                .count()
+        })
+        .for_each(|x| println!("{x}"))
 }
 
 #[cfg(test)]
