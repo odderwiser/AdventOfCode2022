@@ -1,62 +1,58 @@
-use itertools::Itertools;
+mod part1;
+mod part2;
 
-fn part_1(input: &str) -> usize {
-    let mut result = 0;
-    recurse(
-        &mut input
+fn parse(input: &str) -> Box<dyn Iterator<Item = &str> + '_> {
+    Box::new(
+        input
             .lines()
-            .filter(|x| x.starts_with('$') || x.chars().next().unwrap().is_numeric()),
-        &mut result,
-    );
-    result
+            .filter(|x| x.starts_with(|y: char| y.is_numeric() || y == '$')),
+    )
 }
 
-//this function should iterate over one folder
-fn recurse(input: &mut dyn Iterator<Item = &str>, total_sum: &mut usize) -> usize {
+fn process_folder<'a>(
+    input: &mut dyn Iterator<Item = &'a str>,
+    local_sum: &mut usize,
+) -> Option<&'a str> {
+    let mut value = input.next();
+    while value.is_some() && !value.unwrap().starts_with('$') {
+        // println!("Matching in ls loop: {}", value.unwrap());
+        *local_sum += value
+            .unwrap()
+            .split(' ')
+            .next()
+            .unwrap()
+            .parse::<usize>()
+            .unwrap();
+        value = input.next();
+    }
+    value
+}
+
+fn recurse(input: &mut dyn Iterator<Item = &str>, total_repos: &mut Vec<usize>) -> usize {
     let mut local_sum = 0;
     let mut value = input.next();
     while value.is_some() {
-        println!("Matching in main loop: {}", value.unwrap());
         match value.unwrap() {
-            "$ cd .. " => {
-                if total_sum < &mut (100000 as usize) {
-                    *total_sum += local_sum;
-                }
+            "$ cd .." => {
+                total_repos.push(local_sum);
                 return local_sum;
             }
-            "$ ls" => {
-                value = input.next();
-                while value.is_some() && !value.unwrap().starts_with('$') {
-                    println!("Matching in ls loop: {}", value.unwrap());
-                    local_sum += value
-                        .unwrap()
-                        .split(' ')
-                        .next()
-                        .unwrap()
-                        .parse::<usize>()
-                        .unwrap();
-                    value = input.next();
-                }
-            }
+            "$ ls" => value = process_folder(input, &mut local_sum),
             str if str.starts_with("$ cd") => {
-                local_sum += recurse(input, total_sum);
+                local_sum += recurse(input, total_repos);
+                value = input.next()
             }
             _ => unreachable!(),
         }
     }
-    if total_sum < &mut (100000 as usize) {
-        *total_sum += local_sum;
-    }
+    total_repos.push(local_sum);
     return local_sum;
-}
-
-fn part_2(input: &str) -> usize {
-    0
 }
 
 #[cfg(test)]
 mod test {
-    use crate::day07::{part_1, part_2};
+    use crate::day07::part1::part_1;
+    use crate::day07::part2::part_2;
 
     #[test]
     fn part_1_example() {
@@ -66,19 +62,19 @@ mod test {
     #[test]
     fn part_1_puzzle() {
         let output = part_1(include_str!("input.txt"));
-        print!("{}", output);
-        //assert_eq!(1702, output);
+        //print!("{}", output);
+        assert_eq!(1315285, output);
     }
 
     #[test]
     fn part_2_example2() {
-        assert_eq!(26, part_2(include_str!("test1.txt")));
+        assert_eq!(24933642, part_2(include_str!("test1.txt")));
     }
 
     #[test]
     fn part_2_puzzle() {
         let output = part_2(include_str!("input.txt"));
-        print!("{}", output);
-        //assert_eq!(3559, output);
+        //print!("{}", output);
+        assert_eq!(9847279, output);
     }
 }
