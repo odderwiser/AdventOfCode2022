@@ -10,4 +10,3 @@ pub fn part_2(input: &str) -> usize {
         .find(|x| 70000000 - total_size + *x >= 30000000)
         .unwrap()
 }
-
