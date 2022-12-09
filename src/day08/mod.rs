@@ -1,3 +1,6 @@
+mod part1;
+mod part2;
+
 fn parse(input: &str) -> Vec<Vec<Tree>> {
     input
         .lines()
@@ -9,16 +12,20 @@ fn parse(input: &str) -> Vec<Vec<Tree>> {
         .collect::<Vec<_>>()
 }
 
-fn part_2(input: &str) -> usize {
+fn compute(
+    input: &str,
+    traversing: impl Fn(Box<&mut dyn Iterator<Item = &mut Vec<Tree>>>, bool),
+) -> Vec<Vec<Tree>> {
     let mut array = parse(input);
-    traverse_count(Box::new(&mut array.iter_mut()), false);
-    traverse_count(Box::new(&mut array.iter_mut()), true);
-    let mut arr2 = transpose(array);
-    traverse_count(Box::new(&mut arr2.iter_mut()), false);
-    traverse_count(Box::new(&mut arr2.iter_mut()), true);
-    arr2.iter().flatten().map(|x| x.see_trees).max().unwrap() as usize
+    traversing(Box::new(&mut array.iter_mut()), false);
+    traversing(Box::new(&mut array.iter_mut()), true);
+    array = transpose(array);
+    traversing(Box::new(&mut array.iter_mut()), false);
+    traversing(Box::new(&mut array.iter_mut()), true);
+    array
 }
 
+//stolen from https://stackoverflow.com/questions/64498617/how-to-transpose-a-vector-of-vectors-in-rust
 fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
     assert!(!v.is_empty());
     let len = v[0].len();
@@ -33,106 +40,39 @@ fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
         .collect()
 }
 
-fn traverse(array: Box<&mut dyn Iterator<Item = &mut Vec<Tree>>>, dir: Dir, rev: bool) {
-    let mut current_height: i8 = -1;
-    array.for_each(|x| {
-        current_height = -1;
-        let mut it: Box<dyn DoubleEndedIterator<Item = &mut Tree>> = Box::new(x.iter_mut());
-        if rev {
-            it = Box::new(it.rev());
-        }
-        it.for_each(|y: &mut Tree| {
-            if y.height > current_height {
-                current_height = y.height;
-            } else {
-                y.invisible(&dir);
-            }
-        })
-    });
-}
-
-//you see all trees until the next tree of the same height as you
-fn traverse_count(array: Box<&mut dyn Iterator<Item = &mut Vec<Tree>>>, rev: bool) {
-    let mut current_height: Vec<i8> = Vec::new();
-    let mut see_trees: u32 = 0;
-    array.for_each(|x| {
-        current_height = Vec::new();
-        see_trees = 0;
-        let mut it: Box<dyn DoubleEndedIterator<Item = &mut Tree>> = Box::new(x.iter_mut());
-        if rev {
-            it = Box::new(it.rev());
-        }
-        it.for_each(|y: &mut Tree| {
-            let see_trees = match current_height.iter().rposition(|x| x >= &y.height) {
-                None => current_height.len(),
-                Some(val) => current_height.len() - val,
-            };
-            y.add(see_trees as u32);
-            current_height.push(y.height);
-        })
-    });
-}
-
-fn part_1(input: &str) -> usize {
-    let mut array = parse(input);
-    traverse(Box::new(&mut array.iter_mut()), Dir::LEFT, false);
-    traverse(Box::new(&mut array.iter_mut()), Dir::RIGHT, true);
-    let mut arr2 = transpose(array);
-    traverse(Box::new(&mut arr2.iter_mut()), Dir::TOP, false);
-    traverse(Box::new(&mut arr2.iter_mut()), Dir::BOTTOM, true);
-    arr2.iter().flatten().filter(|x| x.is_visible()).count()
-}
-
 #[derive(Debug)]
 struct Tree {
-    visible_left: bool,
-    visible_right: bool,
-    visible_top: bool,
-    visible_bottom: bool,
+    visible: bool,
     height: i8,
-    see_trees: u32,
+    scenic_factor: u32,
 }
 
 impl Tree {
     fn new(height: i8) -> Tree {
         Tree {
-            visible_left: true,
-            visible_right: true,
-            visible_top: true,
-            visible_bottom: true,
+            visible: false,
             height,
-            see_trees: 1,
-        }
-    }
-
-    fn invisible(&mut self, dir: &Dir) {
-        match dir {
-            Dir::LEFT => self.visible_left = false,
-            Dir::RIGHT => self.visible_right = false,
-            Dir::TOP => self.visible_top = false,
-            Dir::BOTTOM => self.visible_bottom = false,
+            scenic_factor: 1,
         }
     }
 
     fn is_visible(&self) -> bool {
-        return self.visible_bottom || self.visible_left || self.visible_right || self.visible_top;
+        return self.visible;
     }
 
-    fn add(&mut self, trees: u32) {
-        self.see_trees *= trees;
+    fn visible(&mut self) {
+        self.visible = true;
     }
-}
 
-enum Dir {
-    LEFT,
-    RIGHT,
-    TOP,
-    BOTTOM,
+    fn scenic_factor(&mut self, see_trees: u32) {
+        self.scenic_factor *= see_trees;
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::day08::{part_1, part_2};
+    use crate::day08::part1::part_1;
+    use crate::day08::part2::part_2;
 
     #[test]
     fn part_1_example() {
