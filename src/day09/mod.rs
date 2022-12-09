@@ -22,24 +22,27 @@ fn part_2(input: &str) -> usize {
     for _ in 2..=9 {
         generated = iterate(generated);
     }
-    generated.sorted().dedup().count()
+    generated.sorted().dedup().count()+1 // +1 because flatmap removes a starting position
 }
 
 fn generate<'a>(moves : Box<dyn Iterator<Item = Move>+ 'a>) -> Box<dyn Iterator<Item = Pos> + 'a> {
     let mut start = Pos::new(0,0);
     let mut follower : Pos = Pos::new(0,0);
     Box::new(iter::once(Pos::new(0,0)).chain(moves
-        .map(move |x: Move| x.make_move(&mut start, &mut follower))
-        .flatten()))
+        .flat_map(move |x: Move| x.make_move(&mut start, &mut follower))))
 }
 
 fn iterate<'a>(generated : Box<dyn Iterator<Item = Pos>+'a>) -> Box<dyn Iterator<Item = Pos> + 'a> {
     let mut follower = Pos::new(0,0);
     Box::new(generated
-        .map(move |x| {
-            follower.make_step(&x);
-            follower.clone()
-        }).dedup())
+        .filter_map(move |x| {
+            if follower.is_adjacent(&x) {
+                None
+            } else {
+                follower.move_towards(&x);
+                Some(follower.clone())
+            }
+        }))
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug, PartialOrd, Ord)]
@@ -134,16 +137,10 @@ impl Pos {
                 self.y += b;
             }
             (a, b) if i32::abs(a) == i32::abs(b) => {
-                self.x += a/2;
-                self.y += b/2;
+                self.x += a / 2;
+                self.y += b / 2;
             }
             _ => unreachable!("Not supposed to happen! Following: {:?}, current: {:?}", other, self),
-        }
-    }
-
-    fn make_step(&mut self, next: &Pos) {
-        if !self.is_adjacent(next) {
-            self.move_towards(next);
         }
     }
 }
