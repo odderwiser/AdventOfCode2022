@@ -22,7 +22,7 @@ fn part_1(input: &str) -> usize {
 }
 
 fn part_2(input: &str) -> usize {
-    let moves : Box<dyn Iterator<Item=Move> >= parse(input);
+    let moves : Box<dyn Iterator<Item=Move> > = parse(input);
     let mut start = Pos::new(0,0);
     let mut follower : Pos = Pos::new(0,0);
     let mut visited: HashSet<Pos> = HashSet::new();
@@ -36,22 +36,26 @@ fn part_2(input: &str) -> usize {
         false
     })));
     for i in 1..8 {
-        let mut follower = Pos::new(0,0);
-        let mut visited = HashSet::new();
-        generated = Box::new(generated
-            .map(|x| {
-                let new_follower = follower.clone();
-                new_follower.make_step(&x);
-                new_follower
-            }).filter(|x| {
-            if !visited.contains(x) {
-                visited.insert(x.clone());
-                return true
-            }
-            false
-        }))
+        generated = iterate(generated);
     }
     generated.count()
+}
+
+fn iterate(generated : Box<dyn Iterator<Item = Pos>>) -> Box<dyn Iterator<Item = Pos>> {
+    let follower = Pos::new(0,0);
+    let mut visited = HashSet::new();
+    Box::new(generated
+        .map(move |x| {
+            let mut new_follower = follower.clone();
+            new_follower.make_step(&x);
+            new_follower
+        }).filter(move |x| {
+        if !visited.contains(x) {
+            visited.insert(x.clone());
+            return true
+        }
+        false
+    }))
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
