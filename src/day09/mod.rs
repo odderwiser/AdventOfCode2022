@@ -3,7 +3,7 @@ use std::hash::Hash;
 use itertools::Itertools;
 use std::{iter, num};
 
-fn parse(input: &str) -> Box<dyn Iterator<Item = Move> + '_> {
+fn parse(input: &str) -> Box<dyn Iterator<Item = Move> +'_> {
     Box::new(input.lines().map(|x| {
         x.split_whitespace()
             .tuples::<(_, _)>().next().unwrap()} )
@@ -13,49 +13,34 @@ fn parse(input: &str) -> Box<dyn Iterator<Item = Move> + '_> {
 
 fn part_1(input: &str) -> usize {
     let moves : Box<dyn Iterator<Item=Move> >= parse(input);
-    let (mut start_head, mut start_tail) = (Pos::new(0, 0), Pos::new(0, 0));
-    let mut positions = moves
-        .map(|x: Move| x.make_move(&mut start_head, &mut start_tail))
-        .flatten().collect::<HashSet<Pos>>();
-    positions.insert(Pos::new(0,0));
-    positions.len()
+    let generated = generate(moves);
+    HashSet::<Pos>::from_iter(generated).len()
 }
 
 fn part_2(input: &str) -> usize {
     let moves : Box<dyn Iterator<Item=Move> > = parse(input);
-    let mut start = Pos::new(0,0);
-    let mut follower : Pos = Pos::new(0,0);
-    let mut visited: HashSet<Pos> = HashSet::new();
-    let mut generated : Box<dyn Iterator<Item = Pos>> = Box::new(iter::once(Pos::new(0,0)).chain(moves
-        .map(|x: Move| x.make_move(&mut start, &mut follower))
-        .flatten().filter(|x| {
-        if !visited.contains(x) {
-            visited.insert(x.clone());
-            return true
-        }
-        false
-    })));
-    for i in 1..8 {
+    let mut generated = generate(moves);
+    for _ in 2..=9 {
         generated = iterate(generated);
     }
-    generated.count()
+    HashSet::<Pos>::from_iter(generated).len()
 }
 
-fn iterate(generated : Box<dyn Iterator<Item = Pos>>) -> Box<dyn Iterator<Item = Pos>> {
-    let follower = Pos::new(0,0);
-    let mut visited = HashSet::new();
+fn generate<'a>(moves : Box<dyn Iterator<Item = Move>+ 'a>) -> Box<dyn Iterator<Item = Pos> + 'a> {
+    let mut start = Pos::new(0,0);
+    let mut follower : Pos = Pos::new(0,0);
+    Box::new(iter::once(Pos::new(0,0)).chain(moves
+        .map(move |x: Move| x.make_move(&mut start, &mut follower))
+        .flatten()))
+}
+
+fn iterate<'a>(generated : Box<dyn Iterator<Item = Pos>+'a>) -> Box<dyn Iterator<Item = Pos> + 'a> {
+    let mut follower = Pos::new(0,0);
     Box::new(generated
         .map(move |x| {
-            let mut new_follower = follower.clone();
-            new_follower.make_step(&x);
-            new_follower
-        }).filter(move |x| {
-        if !visited.contains(x) {
-            visited.insert(x.clone());
-            return true
-        }
-        false
-    }))
+            follower.make_step(&x);
+            follower.clone()
+        }).dedup())
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
@@ -149,6 +134,10 @@ impl Pos {
                 self.x += (a / 2);
                 self.y += b;
             }
+            (a, b) if i32::abs(a) == i32::abs(b) => {
+                self.x += a/2;
+                self.y += b/2;
+            }
             _ => unreachable!("Not supposed to happen! Following: {:?}, current: {:?}", other, self),
         }
     }
@@ -172,19 +161,23 @@ mod test {
     #[test]
     fn part_1_puzzle() {
         let output = part_1(include_str!("input.txt"));
-        print!("{}", output);
-        //assert_eq!(1702, output);
+        //print!("{}", output);
+        assert_eq!(6314, output);
     }
 
     #[test]
+    fn part_2_example1() {
+        assert_eq!(1, part_2(include_str!("test1.txt")));
+    }
+    #[test]
     fn part_2_example2() {
-        assert_eq!(0, part_2(include_str!("test1.txt")));
+        assert_eq!(36, part_2(include_str!("test2.txt")));
     }
 
     #[test]
     fn part_2_puzzle() {
         let output = part_2(include_str!("input.txt"));
-        print!("{}", output);
-        //assert_eq!(3559, output);
+        //print!("{}", output);
+        assert_eq!(2504, output);
     }
 }
