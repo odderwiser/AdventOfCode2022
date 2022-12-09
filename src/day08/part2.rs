@@ -10,7 +10,7 @@ pub fn part_2(input: &str) -> usize {
 }
 
 //you see all trees until the next tree of the same height as you
-fn traverse(array: Box<&mut dyn Iterator<Item = &mut Vec<Tree>>>, rev: bool) {
+fn traverse(array: &mut dyn Iterator<Item = &mut Vec<Tree>>, rev: bool) {
     let mut current_height: Vec<i8> = Vec::new();
     array.for_each(|x| {
         current_height = Vec::new();

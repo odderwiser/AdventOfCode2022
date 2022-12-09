@@ -46,7 +46,7 @@ fn recurse(input: &mut dyn Iterator<Item = &str>, total_repos: &mut Vec<usize>) 
         }
     }
     total_repos.push(local_sum);
-    return local_sum;
+    local_sum
 }
 
 #[cfg(test)]

@@ -1,7 +1,6 @@
-use std::collections::HashSet;
 use std::hash::Hash;
 use itertools::Itertools;
-use std::{iter, num};
+use std::iter;
 
 fn parse(input: &str) -> Box<dyn Iterator<Item = Move> +'_> {
     Box::new(input.lines().map(|x| {
@@ -14,7 +13,7 @@ fn parse(input: &str) -> Box<dyn Iterator<Item = Move> +'_> {
 fn part_1(input: &str) -> usize {
     let moves : Box<dyn Iterator<Item=Move> >= parse(input);
     let generated = generate(moves);
-    HashSet::<Pos>::from_iter(generated).len()
+    generated.sorted().dedup().count()
 }
 
 fn part_2(input: &str) -> usize {
@@ -23,7 +22,7 @@ fn part_2(input: &str) -> usize {
     for _ in 2..=9 {
         generated = iterate(generated);
     }
-    HashSet::<Pos>::from_iter(generated).len()
+    generated.sorted().dedup().count()
 }
 
 fn generate<'a>(moves : Box<dyn Iterator<Item = Move>+ 'a>) -> Box<dyn Iterator<Item = Pos> + 'a> {
@@ -43,7 +42,7 @@ fn iterate<'a>(generated : Box<dyn Iterator<Item = Pos>+'a>) -> Box<dyn Iterator
         }).dedup())
 }
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug, PartialOrd, Ord)]
 struct Pos {
     x: i32,
     y: i32,
@@ -95,7 +94,7 @@ impl Move {
     fn make_move(&self, head: &mut Pos, tail: &mut Pos) -> Vec<Pos> {
         //println!("Move is: {:?}", self);
         let mut res = Vec::new();
-        for i in 0..self.steps {
+        for _ in 0..self.steps {
             head.update(self.get_step_dir());
             if !tail.is_adjacent(head) {
                 tail.move_towards(head);
@@ -123,15 +122,15 @@ impl Pos {
 
     fn move_towards(&mut self, other: &Pos) {
         match (other.x - self.x, other.y - self.y) {
-            (a, b) if self.is_adjacent(other) => (),
-            (a, b) if a == 0 => self.y += (b / 2),
-            (a, b) if b == 0 => self.x += (a / 2),
+            (_, _) if self.is_adjacent(other) => (),
+            (a, b) if a == 0 => self.y += b / 2,
+            (a, b) if b == 0 => self.x += a / 2,
             (a, b) if i32::abs(a) == 1 => {
                 self.x += a;
-                self.y += (b / 2);
+                self.y += b / 2;
             }
             (a, b) if i32::abs(b) == 1 => {
-                self.x += (a / 2);
+                self.x += a / 2;
                 self.y += b;
             }
             (a, b) if i32::abs(a) == i32::abs(b) => {

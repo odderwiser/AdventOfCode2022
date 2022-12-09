@@ -14,14 +14,14 @@ fn parse(input: &str) -> Vec<Vec<Tree>> {
 
 fn compute(
     input: &str,
-    traversing: impl Fn(Box<&mut dyn Iterator<Item = &mut Vec<Tree>>>, bool),
+    traversing: impl Fn(&mut dyn Iterator<Item = &mut Vec<Tree>>, bool),
 ) -> Vec<Vec<Tree>> {
     let mut array = parse(input);
-    traversing(Box::new(&mut array.iter_mut()), false);
-    traversing(Box::new(&mut array.iter_mut()), true);
+    traversing(&mut array.iter_mut(), false);
+    traversing(&mut array.iter_mut(), true);
     array = transpose(array);
-    traversing(Box::new(&mut array.iter_mut()), false);
-    traversing(Box::new(&mut array.iter_mut()), true);
+    traversing(&mut array.iter_mut(), false);
+    traversing(&mut array.iter_mut(), true);
     array
 }
 

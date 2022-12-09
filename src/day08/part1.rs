@@ -5,7 +5,7 @@ pub fn part_1(input: &str) -> usize {
     arr.iter().flatten().filter(|x| x.is_visible()).count()
 }
 
-fn traverse(array: Box<&mut dyn Iterator<Item = &mut Vec<Tree>>>, rev: bool) {
+fn traverse(array: &mut dyn Iterator<Item = &mut Vec<Tree>>, rev: bool) {
     let mut current_height: i8 = -1;
     array.for_each(|x| {
         current_height = -1;

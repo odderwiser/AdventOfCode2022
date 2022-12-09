@@ -1,4 +1,4 @@
-use crate::day07::{parse, process_folder, recurse};
+use crate::day07::{parse, recurse};
 use itertools::Itertools;
 
 pub fn part_2(input: &str) -> usize {
