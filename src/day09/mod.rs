@@ -95,7 +95,6 @@ impl Move {
     }
 
     fn make_move(&self, head: &mut Pos, tail: &mut Pos) -> Vec<Pos> {
-        //println!("Move is: {:?}", self);
         let mut res = Vec::new();
         for _ in 0..self.steps {
             head.update(self.get_step_dir());
@@ -103,7 +102,6 @@ impl Move {
                 tail.move_towards(head);
                 res.push(tail.clone());
             }
-            //println!("Tail is: {:?}, head is: {:?}", tail, head);
         }
         res
     }
@@ -126,21 +124,10 @@ impl Pos {
     fn move_towards(&mut self, other: &Pos) {
         match (other.x - self.x, other.y - self.y) {
             (_, _) if self.is_adjacent(other) => (),
-            (a, b) if a == 0 => self.y += b / 2,
-            (a, b) if b == 0 => self.x += a / 2,
-            (a, b) if i32::abs(a) == 1 => {
-                self.x += a;
-                self.y += b / 2;
+            (a, b) => {
+                self.x +=a.signum();
+                self.y+=b.signum();
             }
-            (a, b) if i32::abs(b) == 1 => {
-                self.x += a / 2;
-                self.y += b;
-            }
-            (a, b) if i32::abs(a) == i32::abs(b) => {
-                self.x += a / 2;
-                self.y += b / 2;
-            }
-            _ => unreachable!("Not supposed to happen! Following: {:?}, current: {:?}", other, self),
         }
     }
 }
