@@ -2,11 +2,41 @@ use crate::day11::Op::{Add, Multiply, Square};
 use itertools::Itertools;
 use std::collections::VecDeque;
 
+fn part_1(input: &str) -> usize {
+    let (mut monkeys, mut item_queue) = parse(input);
+    iterate(&mut monkeys, 20,&mut item_queue, |x| (x / 3) as usize);
+    process_result(monkeys)
+}
+
+fn part_2(input: &str) -> usize {
+    let (mut monkeys, mut item_queue) = parse(input);
+    let dividing_factor: usize = monkeys.iter().map(|x| x.test_value).product();
+    iterate(&mut monkeys, 10000, &mut item_queue, |x| x % dividing_factor);
+    process_result(monkeys)
+}
+
 fn parse(input: &str) -> (Vec<Monkey>, Vec<VecDeque<usize>>) {
     let monkeys = input.split("\n\n").map(Monkey::new).collect::<Vec<_>>();
     let mut item_queue: Vec<VecDeque<usize>> = Vec::new();
     (0..monkeys.len()).for_each(|_| item_queue.push(VecDeque::new()));
     (monkeys, item_queue)
+}
+
+fn iterate(
+    monkeys: &mut [Monkey],
+    loops: usize,
+    item_queue: &mut [VecDeque<usize>],
+    manage_worry: impl Fn(usize) -> usize,
+) {
+    (0..loops).for_each(|_| monkeys.iter_mut().for_each(|monkey| {
+        while !item_queue[monkey.id].is_empty() {
+            monkey.add(item_queue[monkey.id].pop_front().unwrap());
+        }
+        let items = monkey.make_round(&manage_worry);
+        for (item, rec) in items {
+            item_queue[rec].push_back(item);
+        }
+    }));
 }
 
 fn process_result(monkeys: Vec<Monkey>) -> usize {
@@ -18,35 +48,6 @@ fn process_result(monkeys: Vec<Monkey>) -> usize {
         .last()
         .unwrap();
     businesses.0 * businesses.1
-}
-
-fn make_round(
-    monkeys: &mut [Monkey],
-    item_queue: &mut [VecDeque<usize>],
-    manage_worry: impl Fn(usize) -> usize,
-) {
-    monkeys.iter_mut().for_each(|monkey| {
-        while !item_queue[monkey.id].is_empty() {
-            monkey.add(item_queue[monkey.id].pop_front().unwrap());
-        }
-        let items = monkey.make_round(&manage_worry);
-        for (item, rec) in items {
-            item_queue[rec].push_back(item);
-        }
-    });
-}
-
-fn part_1(input: &str) -> usize {
-    let (mut monkeys, mut item_queue) = parse(input);
-    (0..20).for_each(|_| make_round(&mut monkeys, &mut item_queue, |x| (x / 3) as usize));
-    process_result(monkeys)
-}
-
-fn part_2(input: &str) -> usize {
-    let (mut monkeys, mut item_queue) = parse(input);
-    let dividing_factor: usize = monkeys.iter().map(|x| x.test_value).product();
-    (0..10000).for_each(|_| make_round(&mut monkeys, &mut item_queue, |x| x % dividing_factor));
-    process_result(monkeys)
 }
 
 struct Monkey {
