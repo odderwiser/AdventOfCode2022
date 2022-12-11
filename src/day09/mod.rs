@@ -1,48 +1,52 @@
-use std::hash::Hash;
 use itertools::Itertools;
+use std::hash::Hash;
 use std::iter;
 
-fn parse(input: &str) -> Box<dyn Iterator<Item = Move> +'_> {
-    Box::new(input.lines().map(|x| {
-        x.split_whitespace()
-            .tuples::<(_, _)>().next().unwrap()} )
-        .map(|(a, b)| Move::new(a.parse::<char>().unwrap(), b.parse::<u16>().unwrap())
-    ))
+fn parse(input: &str) -> Box<dyn Iterator<Item = Move> + '_> {
+    Box::new(
+        input
+            .lines()
+            .map(|x| x.split_whitespace().tuples::<(_, _)>().next().unwrap())
+            .map(|(a, b)| Move::new(a.parse::<char>().unwrap(), b.parse::<u16>().unwrap())),
+    )
 }
 
 fn part_1(input: &str) -> usize {
-    let moves : Box<dyn Iterator<Item=Move> >= parse(input);
+    let moves: Box<dyn Iterator<Item = Move>> = parse(input);
     let generated = generate(moves);
     generated.sorted().dedup().count()
 }
 
 fn part_2(input: &str) -> usize {
-    let moves : Box<dyn Iterator<Item=Move> > = parse(input);
+    let moves: Box<dyn Iterator<Item = Move>> = parse(input);
     let mut generated = generate(moves);
     for _ in 2..=9 {
         generated = iterate(generated);
     }
-    generated.sorted().dedup().count()+1 // +1 because flatmap removes a starting position
+    generated.sorted().dedup().count() + 1 // +1 because flatmap removes a starting position
 }
 
-fn generate<'a>(moves : Box<dyn Iterator<Item = Move>+ 'a>) -> Box<dyn Iterator<Item = Pos> + 'a> {
-    let mut start = Pos::new(0,0);
-    let mut follower : Pos = Pos::new(0,0);
-    Box::new(iter::once(Pos::new(0,0)).chain(moves
-        .flat_map(move |x: Move| x.make_move(&mut start, &mut follower))))
+fn generate<'a>(moves: Box<dyn Iterator<Item = Move> + 'a>) -> Box<dyn Iterator<Item = Pos> + 'a> {
+    let mut start = Pos::new(0, 0);
+    let mut follower: Pos = Pos::new(0, 0);
+    Box::new(
+        iter::once(Pos::new(0, 0))
+            .chain(moves.flat_map(move |x: Move| x.make_move(&mut start, &mut follower))),
+    )
 }
 
-fn iterate<'a>(generated : Box<dyn Iterator<Item = Pos>+'a>) -> Box<dyn Iterator<Item = Pos> + 'a> {
-    let mut follower = Pos::new(0,0);
-    Box::new(generated
-        .filter_map(move |x| {
-            if follower.is_adjacent(&x) {
-                None
-            } else {
-                follower.move_towards(&x);
-                Some(follower.clone())
-            }
-        }))
+fn iterate<'a>(
+    generated: Box<dyn Iterator<Item = Pos> + 'a>,
+) -> Box<dyn Iterator<Item = Pos> + 'a> {
+    let mut follower = Pos::new(0, 0);
+    Box::new(generated.filter_map(move |x| {
+        if follower.is_adjacent(&x) {
+            None
+        } else {
+            follower.move_towards(&x);
+            Some(follower.clone())
+        }
+    }))
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug, PartialOrd, Ord)]
@@ -125,8 +129,8 @@ impl Pos {
         match (other.x - self.x, other.y - self.y) {
             (_, _) if self.is_adjacent(other) => (),
             (a, b) => {
-                self.x +=a.signum();
-                self.y+=b.signum();
+                self.x += a.signum();
+                self.y += b.signum();
             }
         }
     }
