@@ -165,8 +165,8 @@ mod test {
     #[test]
     fn part_1_puzzle() {
         let output = part_1(include_str!("input.txt"));
-        print!("{}", output);
-        //assert_eq!(13920, output);
+        //print!("{}", output);
+        assert_eq!(88208, output);
     }
 
     #[test]
@@ -177,7 +177,7 @@ mod test {
     #[test]
     fn part_2_puzzle() {
         let output = part_2(include_str!("input.txt"));
-        print!("{}", output);
-        //assert_eq!(result, output);
+        //print!("{}", output);
+        assert_eq!(21115867968, output);
     }
 }
