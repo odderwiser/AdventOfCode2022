@@ -4,14 +4,16 @@ use std::collections::VecDeque;
 
 fn part_1(input: &str) -> usize {
     let (mut monkeys, mut item_queue) = parse(input);
-    iterate(&mut monkeys, 20,&mut item_queue, |x| (x / 3) as usize);
+    iterate(&mut monkeys, 20, &mut item_queue, |x| (x / 3) as usize);
     process_result(monkeys)
 }
 
 fn part_2(input: &str) -> usize {
     let (mut monkeys, mut item_queue) = parse(input);
     let dividing_factor: usize = monkeys.iter().map(|x| x.test_value).product();
-    iterate(&mut monkeys, 10000, &mut item_queue, |x| x % dividing_factor);
+    iterate(&mut monkeys, 10000, &mut item_queue, |x| {
+        x % dividing_factor
+    });
     process_result(monkeys)
 }
 
@@ -28,15 +30,17 @@ fn iterate(
     item_queue: &mut [VecDeque<usize>],
     manage_worry: impl Fn(usize) -> usize,
 ) {
-    (0..loops).for_each(|_| monkeys.iter_mut().for_each(|monkey| {
-        while !item_queue[monkey.id].is_empty() {
-            monkey.add(item_queue[monkey.id].pop_front().unwrap());
-        }
-        let items = monkey.make_round(&manage_worry);
-        for (item, rec) in items {
-            item_queue[rec].push_back(item);
-        }
-    }));
+    (0..loops).for_each(|_| {
+        monkeys.iter_mut().for_each(|monkey| {
+            while !item_queue[monkey.id].is_empty() {
+                monkey.add(item_queue[monkey.id].pop_front().unwrap());
+            }
+            let items = monkey.make_round(&manage_worry);
+            for (item, rec) in items {
+                item_queue[rec].push_back(item);
+            }
+        })
+    });
 }
 
 fn process_result(monkeys: Vec<Monkey>) -> usize {
