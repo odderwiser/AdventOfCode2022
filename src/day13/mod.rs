@@ -24,7 +24,7 @@ fn compare_packets(left: &Packet, right: &Packet) -> Ordering {
                     other => return other,
                 }
             }
-            a.len().cmp( &b.len())
+            a.len().cmp(&b.len())
         }
         (Packet::Number(a), Packet::List(_)) => {
             compare_packets(&Packet::List(vec![Packet::Number(*a)]), right)
@@ -43,7 +43,7 @@ enum Packet {
 
 impl PartialEq<Self> for Packet {
     fn eq(&self, other: &Self) -> bool {
-        compare_packets(&self, &other)==Ordering::Equal
+        compare_packets(&self, &other) == Ordering::Equal
     }
 }
 
